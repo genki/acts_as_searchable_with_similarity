@@ -1,0 +1,79 @@
+diff -r acts_as_searchable/CHANGELOG aas_ws/CHANGELOG
+19a20,25
+> 
+> *0.1.1*  29 Nov 2007 (Genki Takiuchi <genki@s21g.com>)
+> 
+> * Added similarity search feature.
+> 
+>   Article.similarity_search(target_article, :limit => 5)
+Only in acts_as_searchable: install.rb
+diff -r acts_as_searchable/lib/acts_as_searchable.rb aas_ws/lib/acts_as_searchable.rb
+203a204,216
+> 
+>           # suppress exception
+>           return [] if matches.blank?
+>           conditions = " AND (#{sanitize_sql(find_options[:conditions])})" if
+>             find_options[:conditions]
+>           ids = matches.collect { |m| m.attr('db_id') }
+>           ids_list = ids.map do |id|
+>             quote_value(id, columns_hash[primary_key])
+>           end.join(',')
+>           find_options.update :conditions => "#{quoted_table_name}." +
+>             "#{connection.quote_column_name(primary_key)} IN " +
+>             "(#{ids_list})#{conditions}"
+>           find_every(find_options)
+205c218,232
+<           matches.blank? ? [] : find(matches.collect { |m| m.attr('db_id') }, find_options)
+---
+>           #matches.blank? ? [] : find(matches.collect { |m| m.attr('db_id') }, find_options)
+>         end
+> 
+>         # Similarity search
+>         def similarity_search(model, options = {})
+>           return [] unless doc = model.estraier_doc
+>           doc_id = doc.attr('@id')
+>           keywords = estraier_connection.etch_doc(doc_id)
+>           config = options.delete(:config) || '16 1024 4096'
+>           phrase = keywords.inject("[SIMILAR] #{config}") do |r,(k,v)|
+>             r << " WITH #{v} #{k}"
+>           end
+>           options[:attributes] = [options[:attributes]].flatten.compact
+>           options[:attributes] << "db_id NUMNE #{model.id}"
+>           fulltext_search phrase, options
+371c398
+< end
+\ No newline at end of file
+---
+> end
+diff -r acts_as_searchable/lib/vendor/estraierpure.rb aas_ws/lib/vendor/estraierpure.rb
+239a240,245
+>     # Set the similar id and node URI.
+>     def set_similar(id, uri)
+>       @similar = id
+>       @simnode = uri
+>       nil
+>     end
+295a302,309
+>     # Get similar id
+>     def similar()
+>       @similar
+>     end
+>     # Get simnode URI
+>     def simnode()
+>       @simnode
+>     end
+327a342,343
+>       @similar = nil
+>       @simnode = nil
+441a458,461
+>     # Get the URL of a node server.
+>     def get_url
+>       @url
+>     end
+986a1007,1011
+>       if cond.similar
+>         buf.write("&") if buf.length > 0
+>         buf.write("simid=" + cond.similar.to_s)
+>         buf.write("&simnode=" + CGI::escape(cond.simnode.to_s))
+>       end
+Only in acts_as_searchable: test

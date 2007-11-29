@@ -230,53 +230,6 @@ module ActiveRecord #:nodoc:
           options[:attributes] = [options[:attributes]].flatten.compact
           options[:attributes] << "db_id NUMNE #{model.id}"
           fulltext_search phrase, options
-
-          #options.reverse_merge!(:limit => 100, :offset => 0)
-          #options.assert_valid_keys(VALID_FULLTEXT_OPTIONS)
-
-          #find_options = options[:find] || {}
-          #[ :limit, :offset ].each { |k| find_options.delete(k) } unless
-          #  find_options.blank?
-
-          #cond = new_estraier_condition
-          #cond.set_similar doc.attr('@id'),
-          #  URI.parse(estraier_connection.get_url)
-          #[options[:attributes]].flatten.reject { |a| a.blank? }.each do |attr|
-          #  cond.add_attr attr
-          #end
-          #cond.set_max   options[:limit]
-          #cond.set_skip  options[:offset]
-          #cond.set_order options[:order] if options[:order]
-
-          #matches = nil
-          #seconds = Benchmark.realtime do
-          #  result = estraier_connection.search(cond, 1);
-          #  return (result.doc_num rescue 0) if options[:count]
-          #  return [] unless result
-          #  matches = get_docs_from(result)
-          #  return matches if options[:raw_matches]
-          #end
-
-          #logger.debug(
-          #  connection.send(:format_log_entry, 
-          #    "#{self.to_s} similarity seach for " +
-          #    "'#{model.class}[#{model.id}]' (#{sprintf("%f", seconds)})",
-          #    "Condition: #{cond.to_s}"
-          #  )
-          #)
-
-          ## suppress exception
-          #conditions = " AND (#{sanitize_sql(find_options[:conditions])})" if
-          #  find_options[:conditions]
-          #ids = matches.collect { |m| m.attr('db_id') }
-          #ids_list = ids.map do |id|
-          #  quote_value(id, columns_hash[primary_key])
-          #end.join(',')
-          #find_options.update :conditions => "#{quoted_table_name}." +
-          #  "#{connection.quote_column_name(primary_key)} IN " +
-          #  "(#{ids_list})#{conditions}"
-          #
-          #matches.blank? ? [] : find_every(find_options)
         end
         
         # Clear all entries from index
